@@ -5,12 +5,8 @@ const mongoose = require('mongoose');
 const path = require('path');
 const multer = require('multer');
 const app = express();
-const http = require('http').Server(app);
-const io = require('socket.io')(http);
 
 const { getIdFromToken } = require('./controllers/auth');
-
-// app.set('socketio', io);
 
 const PORT = process.env.PORT || 8081;
 
@@ -45,31 +41,6 @@ app.use(cors());
 
 let listOfUsers = [];
 
-io.on('connection', function (socket) {
-	const id = socket.handshake.query && getIdFromToken(socket.handshake.query.user);
-
-	socket.emit('info', { message: 'Dobrodosli u Chat!', activeUsers: listOfUsers });
-
-	const newUser = { user: id, id: socket.id };
-	listOfUsers.push(newUser);
-
-	socket.broadcast.emit('info', { message: 'Korisnik konektovan', activeUsers: listOfUsers });
-
-	socket.on('message', (data) => {
-		const findUser = listOfUsers.find((user) => user.user === data.to);
-		if(findUser){
-			io.to(findUser.id).emit('message', { message: data });
-		}
-
-	});
-
-	socket.on('disconnect', () => {
-		listOfUsers = listOfUsers.filter((user) => user.id !== socket.id);
-
-		socket.broadcast.emit('info', { message: 'Korisnik je napustio kanal', activeUsers: listOfUsers });
-	});
-});
-
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
 const messageRoutes = require('./routes/message');
@@ -91,6 +62,32 @@ mongoose.connect(
 	{ useNewUrlParser: true, useUnifiedTopology: true }
 );
 
-const server = http.listen(PORT, () => {
+const server = app.listen(PORT, () => {
 	console.log('Server je pokrenut na PORTU: ', server.address().port);
+});
+
+const io = require('socket.io')(server, { cors: true });
+
+io.on('connection', function (socket) {
+	const id = socket.handshake.query && getIdFromToken(socket.handshake.query.user);
+
+	socket.emit('info', { message: 'Dobrodosli u Chat!', activeUsers: listOfUsers });
+
+	const newUser = { user: id, id: socket.id };
+	listOfUsers.push(newUser);
+
+	socket.broadcast.emit('info', { message: 'Korisnik konektovan', activeUsers: listOfUsers });
+
+	socket.on('message', (data) => {
+		const findUser = listOfUsers.find((user) => user.user === data.to);
+		if (findUser) {
+			io.to(findUser.id).emit('message', { message: data });
+		}
+	});
+
+	socket.on('disconnect', () => {
+		listOfUsers = listOfUsers.filter((user) => user.id !== socket.id);
+
+		socket.broadcast.emit('info', { message: 'Korisnik je napustio kanal', activeUsers: listOfUsers });
+	});
 });
