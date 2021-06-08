@@ -29,15 +29,23 @@ exports.postMessage = (req, res, next) => {
 	const id = getIdFromAuth(req);
 	const { user } = req.query;
 
+	let file = null;
+
+	if (req.file && req.file.path) {
+		file = req.file && req.file.path;
+	}
+
 	const { message } = req.body;
 
 	const messageObj = new Message({
-		from:id,
-		to:user,
+		from: id,
+		to: user,
 		message,
+		file,
 	});
 
-	messageObj.save()
+	messageObj
+		.save()
 		.then((result) => {
 			res.status(200).json({
 				data: result,

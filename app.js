@@ -10,27 +10,19 @@ const { getIdFromToken } = require('./controllers/auth');
 
 const PORT = process.env.PORT || 8081;
 
-const fileStorage = multer.diskStorage({
-	destination: (req, file, cb) => {
-		cb(null, 'image');
+var storage = multer.diskStorage({
+	destination: function (req, file, cb) {
+		cb(null, 'uploads');
 	},
-	filename: (req, file, cb) => {
-		cb(null, new Date().toISOString() + '-' + file.originalname);
+	filename: function (req, file, cb) {
+		cb(null, file.originalname + '-' + Date.now());
 	},
 });
 
-const fileFilter = (req, file, cb) => {
-	if (file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/jpeg') {
-		cb(null, true);
-	} else {
-		cb(null, false);
-	}
-};
-
 app.use(bodyParser.json());
 
-app.use(multer({ storage: fileStorage, fileFilter: fileFilter }).single('image'));
-app.use('/image', express.static(path.join(__dirname, 'image')));
+app.use(multer({ storage: storage }).single('file'));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use(function (req, res, next) {
 	req.headers.origin = req.headers.origin || req.headers.host;
