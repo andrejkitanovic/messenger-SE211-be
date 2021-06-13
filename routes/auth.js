@@ -34,7 +34,5 @@ router.post(
 	],
 	userController.register
 );
-// router.put('/', userController.updateCurrentUser);
-// router.put('/change-password', userController.changePassword);
 
 module.exports = router;

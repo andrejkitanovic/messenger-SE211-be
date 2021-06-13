@@ -10,7 +10,3 @@ router.get('/', messageController.getMessages);
 router.post('/', messageController.postMessage);
 
 module.exports = router;
-// module.exports = function (io) {
-
-// 	return router;
-// };
