@@ -12,5 +12,4 @@ module.exports = (app,express) => {
     });
     
     app.use(multer({ storage: storage }).single('file'));
-    app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 }
