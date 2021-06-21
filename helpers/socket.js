@@ -13,13 +13,6 @@ module.exports = (server) => {
 	
 		socket.emit('info', { message: 'Dobrodosli u Chat!', activeUsers: listOfUsers });
 		socket.broadcast.emit('info', { message: 'Korisnik konektovan', activeUsers: listOfUsers });
-	
-		socket.on('message', (data) => {
-			const findUser = listOfUsers.find((user) => user.user === data.to);
-			if (findUser) {
-				io.to(findUser.id).emit('message', { message: data });
-			}
-		});
 
 		socket.on('message', (data) => {
 			const findUser = listOfUsers.find((user) => user.user === data.to);
